@@ -33,10 +33,10 @@ public class StudentDao implements Closeable {
             Transaction transacrtion = session.beginTransaction();
             try {
                 Student student = new Student();
-                student.setName(name);
-                student.setAddress(address);
-                student.setPhone(phone);
-                student.setEmail(email);
+                student.setName(name.substring(1,name.length()-1));
+                student.setAddress(address.substring(1,address.length()-1));
+                student.setPhone(phone.substring(1,phone.length()-1));
+                student.setEmail(email.substring(1,email.length()-1));
                 session.save(student);
 
                 transacrtion.commit();
@@ -69,22 +69,6 @@ public class StudentDao implements Closeable {
         }
     }
 
-    public void editStudent(Integer id, String name) {
-        try {
-            Transaction transacrtion = session.beginTransaction();
-            try {
-                Student student = (Student) session.load(Student.class, id);
-                student.setName(name);
-
-                transacrtion.commit();
-            } catch (Exception e) {
-                transacrtion.rollback();
-                throw e;
-            }
-        } finally {
-            HibernateUtil.closeSession();
-        }
-    }
 
     public Student findById(Integer id) {
         try {

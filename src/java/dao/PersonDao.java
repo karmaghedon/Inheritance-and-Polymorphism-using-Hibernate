@@ -11,6 +11,7 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionException;
 import org.hibernate.Transaction;
+import pojo.Employee;
 import pojo.Person;
 import util.HibernateUtil;
 
@@ -47,7 +48,7 @@ public class PersonDao {
                 throw e;
             }
         } finally {
-            HibernateUtil.closeSession();
+            HibernateUtil.closeSession();           
         }
 
     }
@@ -69,5 +70,46 @@ public class PersonDao {
             HibernateUtil.closeSession();
         }
     }
+    
+        public void deletePerson(Integer id) {
+        try {
+            Transaction transacrtion = session.beginTransaction();
+            try {
+                Person person = (Person) session.load(Person.class, id);
+                session.delete(person);
+
+                transacrtion.commit();
+            } catch (Exception e) {
+                transacrtion.rollback();
+                throw e;
+            }
+        } finally {
+            HibernateUtil.closeSession();
+        }
+    }
+        
+        
+        public void personEdit(int id,  String name, String address, String phone, String email){
+            Transaction transacrtion = session.beginTransaction();
+            
+            try{
+                Person person = (Person) session.load(Person.class, id);
+
+                person.setName(name.substring(1,name.length()-1));
+                person.setAddress(address.substring(1,address.length()-1));
+                person.setPhone(phone.substring(1,phone.length()-1));
+                person.setEmail(email.substring(1,email.length()-1));
+
+                session.update(person);
+
+               transacrtion.commit();
+            }catch(Exception e){
+                transacrtion.rollback();
+                throw e;
+            }finally {
+            HibernateUtil.closeSession();
+        }
+            
+        }
 
 }

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+
+
+<html>
+    <head>
+        <title>Person Database</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+        <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <table class="table table-hover" id="myTable">
+            <thead>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+        <div id='btnAdd'>
+        </div>
+        <script
+            src="https://code.jquery.com/jquery-3.3.1.min.js"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>            
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+        <script>
+            $(document).ready(function (ev) {
+
+                var getUrlParam = function getUrlParam(sParam) {
+                    var sPageURL = window.location.search.substring(1);
+                    return sPageURL;
+                };
+
+                var urlData = getUrlParam();
+                var id = urlData.substring(urlData.lastIndexOf("=") + 1);
+                var data = "";
+                var personSelection = "";
+                var editSelect = false;
+
+                fetch('api/findById/' + id).then(function (response) {
+
+                    return response.clone().json();
+
+                }).then(function (json) {
+
+                    $("#myTable > thead").append(
+                            '<tr>' +
+                            '<th scope="col">Name</th>' +
+                            '<th scope="col">Address</th>' +
+                            '<th scope="col">Phone</th>' +
+                            ' <th scope="col">Email</th>' +
+                            ' <th scope="col">Options</th>' +
+                            '</tr>');
+
+                    var row_id = json.id;
+                    $("#myTable > tbody").append(
+                            '<tr row_id="' + row_id + '">' +
+                            '<td ><div class="row_data" edit_type="click" col_name="name">' + json.name + '</div></td>' +
+                            '<td ><div class="row_data" edit_type="click" col_name="address">' + json.address + '</div></td>' +
+                            '<td ><div class="row_data" edit_type="click" col_name="phone">' + json.phone + '</div></td>' +
+                            '<td ><div class="row_data" edit_type="click" col_name="email">' + json.email + '</div></td>' +
+                            '<td>' +
+                            '<span class="btn_edit" > <a href="#" class="btn btn-link " row_id="' + row_id + '" > Edit</a> </span>' +
+                            '<span class="btn_delete" > <a href="#" class="btn btn-link " row_id="' + row_id + '" > Delete</a> </span>' +
+                            '<span class="btn_save"> <a href="#" class="btn btn-link"  row_id="' + row_id + '"> Save</a> | </span>' +
+                            '<span class="btn_cancel"> <a href="#" class="btn btn-link" row_id="' + row_id + '"> Cancel</a> | </span>' +
+                            '</td>' +
+                            '</tr>'
+                            );
+
+                    $(document).find('.btn_save').hide();
+                    $(document).find('.btn_cancel').hide();
+
+
+
+                    $("#btnAdd").append('<a class="btn btn-primary viewStd" role="button">View All</a>'
+
+                            );
+                    $(".viewStd").bind("click", ViewStd);
+
+
+
+
+
+                    //--->make div editable > start
+                    $(document).on('click', '.row_data', function (event)
+                    {
+                        event.preventDefault();
+
+                        if ($(this).attr('edit_type') === 'button')
+                        {
+                            return false;
+                        }
+
+
+                        $(this).closest('div').attr('contenteditable', 'true');
+
+                        $(this).addClass('bg-warning').css('padding', '5px');
+
+                        $(this).focus();
+                    });
+
+
+
+                    $(document).on('click', '.btn_edit', function (event)
+                    {
+                        event.preventDefault();
+                        var tbl_row = $(this).closest('tr');
+
+                        var row_id = tbl_row.attr('row_id');
+                        editSelect = true;
+                        tbl_row.find('.btn_save').show();
+                        tbl_row.find('.btn_cancel').show();
+
+
+                        tbl_row.find('.btn_edit').hide();
+
+
+                        tbl_row.find('.row_data')
+                                .attr('contenteditable', 'true')
+                                .attr('edit_type', 'button')
+                                .addClass('bg-warning')
+                                .css('padding', '3px');
+
+
+                        tbl_row.find('.row_data').each(function (index, val)
+                        {
+
+                            $(this).attr('original_entry', $(this).html());
+                        });
+
+
+                    });
+
+                    $(document).on('click', '.btn_cancel', function (event)
+                    {
+                        event.preventDefault();
+
+                        var tbl_row = $(this).closest('tr');
+
+                        var row_id = tbl_row.attr('row_id');
+
+
+                        tbl_row.find('.btn_save').hide();
+                        tbl_row.find('.btn_cancel').hide();
+
+
+                        tbl_row.find('.btn_edit').show();
+
+
+                        tbl_row.find('.row_data')
+                                .attr('edit_type', 'click')
+                                .removeClass('bg-warning')
+                                .css('padding', '');
+
+                        tbl_row.find('.row_data').each(function (index, val)
+                        {
+                            $(this).html($(this).attr('original_entry'));
+                        });
+                    });
+
+
+                    $(document).on('click', '.btn_save', function (event)
+                    {
+                        event.preventDefault();
+                        var tbl_row = $(this).closest('tr');
+
+                        var row_id = tbl_row.attr('row_id');
+
+                        //make the whole row editable
+                        tbl_row.find('.row_data')
+                                .attr('edit_type', 'click')
+                                .removeClass('bg-warning')
+                                .css('padding', '')
+
+
+                        var arr = {};
+                        var status = true;
+                        var inputName, inputAddress, inputPhone, inputEmail;
+                        tbl_row.find('.row_data').each(function (index, val)
+                        {
+                            var col_name = $(this).attr('col_name');
+                            var col_val = $(this).html();
+                            arr[col_name] = col_val;
+
+                            if (col_name === "name") {
+                                inputName = col_val;
+                                if (inputName === '')
+                                {
+                                    tbl_row.find('#name')
+                                            .attr('edit_type', 'click')
+                                            .addClass('bg-warning')
+                                            .css('padding', '5px');
+
+                                    alert('Please enter your Full Name');
+                                    $('#name').focus(); //The focus function will move the cursor to "fullname" field
+                                    status = false;
+                                }
+
+                            } else if (col_name === "address") {
+                                inputAddress = col_val;
+                                if (inputAddress === '')
+                                {
+                                    tbl_row.find('#address')
+                                            .attr('edit_type', 'click')
+                                            .addClass('bg-warning')
+                                            .css('padding', '5px');
+                                    alert('Please enter your Address');
+                                    $('#address').focus();
+                                    status = false;
+                                }
+                            } else if (col_name === "phone") {
+                                inputPhone = col_val;
+                                var re = /^\(?(\d{3})\)?[- ]?(\d{3})[- ]?(\d{4})$/;
+                                var is_phone = re.test(inputPhone);
+                                if (inputPhone === '' || is_phone === false) {
+                                    tbl_row.find('#phone')
+                                            .attr('edit_type', 'click')
+                                            .addClass('bg-warning')
+                                            .css('padding', '5px');
+                                    alert('Please enter your Mobile Number in 10 Digit Format');
+                                    $('#phone').focus();
+                                    status = false;
+                                }
+                            } else if (col_name === "email") {
+                                inputEmail = col_val;
+                                var re = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+                                var is_email = re.test(inputEmail);
+                                if (inputEmail === '' || is_email === false)
+                                {
+                                    tbl_row.find('#email')
+                                            .attr('edit_type', 'click')
+                                            .addClass('bg-warning')
+                                            .css('padding', '5px');
+                                    alert('Please enter a valid Email Id');
+                                    $('#email').focus();
+                                    status = false;
+                                }
+                            }
+                        });
+
+
+
+                        $.extend(arr, {row_id: row_id});
+
+
+                        var jsonString = JSON.stringify(arr, null, 2);
+                        var urlToSend = "";
+                        if (editSelect === true) {
+                            urlToSend = "http://localhost:8080/Inheritance_Polymorphism/api/edit/" + row_id;
+
+                        } else {
+                            urlToSend = "http://localhost:8080/Inheritance_Polymorphism/api/insert/";
+                        }
+
+                        if (personSelection === "Student") {
+                            urlToSend = urlToSend + "Student";
+                        } else if (personSelection === "Employee") {
+                            urlToSend = urlToSend + "Employee";
+                        }
+
+                        if (status === true) {
+                            tbl_row.find('.btn_save').hide();
+                            tbl_row.find('.btn_cancel').hide();
+                            tbl_row.find('.btn_edit').show();
+                            $.ajax({
+                                url: urlToSend,
+                                method: 'POST',
+                                data: jsonString,
+                                contentType: 'application/json; charset=utf-8',
+                                success: function (data) {
+                                    if (editSelect !== true) {
+                                        tbId = data;
+                                        $("#row_id").value = tbId;
+                                    } else {
+                                        tbId = row_id;
+                                    }
+
+                                    alert("Saved Successfully ");
+                                },
+                                error: function (error) {
+                                    alert("Error");
+                                    alert(error.toString());
+                                }
+
+
+                            });
+                        }
+
+                    });
+
+
+                    $(document).on('click', '.btn_delete', function (event)
+                    {
+                        var tbl_row = $(this).closest('tr');
+
+                        var row_id = tbl_row.attr('row_id');
+                        var id = row_id;
+                        tbl_row.remove();
+
+                        $.ajax({
+                            url: "http://localhost:8080/Inheritance_Polymorphism/api/delete/" + id,
+                            method: 'DELETE',
+                            success: function () {
+                                alert("Deleted Successfully");
+                            },
+                            error: function (error) {
+                                alert("Error");
+                                alert(error);
+                            }
+                        });
+                    });
+
+
+
+
+                    function ViewStd() {
+                        document.location.href = 'http://localhost:8080/Inheritance_Polymorphism/index.html';
+                    }
+
+                });
+
+                $(function () {
+
+                    var getData = function (request, response) {
+
+                        $.getJSON(
+                                "http://localhost:8080/Inheritance_Polymorphism/api/listAllFilter",
+                                function (data) {
+
+                                    response(data);
+
+                                });
+                    };
+
+                    var selectItem = function (event, ui) {
+                        this.value = ui.item.label;
+                        $("#mySearchTemp").val(ui.item.value);
+                        return false;
+                    };
+
+                    $("#mySearch").autocomplete({
+                        source: getData,
+                        select: selectItem,
+                        minLength: 1,
+                        change: function () {
+                            $("#mySearch").val("").css("display", 2);
+                        }
+
+                    });
+                });
+
+
+            });
+
+
+
+
+        </script>
+
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+
+
+    </body>
+</html>

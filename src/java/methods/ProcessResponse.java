@@ -10,6 +10,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import dao.EmployeeDao;
 import dao.PersonDao;
 import dao.StudentDao;
 import java.text.ParseException;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.logging.Logger.getLogger;
+import pojo.Employee;
 import pojo.Person;
 import pojo.Student;
 
@@ -30,6 +32,7 @@ import pojo.Student;
 public class ProcessResponse {
 
     public String processResponse() {
+
         PersonDao personDao = new PersonDao();
         List<Person> persons = personDao.getAll();
         Gson gson = new Gson();
@@ -39,32 +42,31 @@ public class ProcessResponse {
 
     public String processResponseFilter() {
         PersonDao personDao = new PersonDao();
-        Person person ;
-        Map<String,String> hashMap = new HashMap<>();
+        Person person;
+        Map<String, String> hashMap = new HashMap<>();
+        
         List<Person> persons = personDao.getAll();
-       // List<Map> newList = new ArrayList<>();
-       List<String> newList = new ArrayList<>();
-        for(Object prs: persons){
+
+        List<String> newList = new ArrayList<>();
+        for (Object prs : persons) {
             person = (Person) prs;
             int id = person.getId();
             String name = "";
-            if(person.getName().startsWith("\"")){
-                    name = person.getName().substring(1, person.getName().length()-1); 
-            }else{
+            if (person.getName().startsWith("\"")) {
+                name = person.getName().substring(1, person.getName().length() - 1);
+            } else {
                 name = person.getName();
             }
-            String general = String.valueOf(id)+","+ name;
-           // hashMap.put(String.valueOf(id), name);
+            String general = String.valueOf(id) + "," + name;
             newList.add(general);
         }
-        //newList.add(hashMap);
-        
+
         Gson gson = new Gson();
         String jSon = gson.toJson(newList);
         return jSon;
     }
 
-    public int createPerson(String json) {
+    public int createStudent(String json) {
         Student student = null;
         StudentDao studetnDao = new StudentDao();
         JsonParser parser = new JsonParser();
@@ -84,9 +86,50 @@ public class ProcessResponse {
 
         return result;
     }
-    
-    
-    public String findById(int id){
+
+    public int createEmployee(String json) {
+        Employee employee = null;
+        EmployeeDao employeeDao = new EmployeeDao();
+        JsonParser parser = new JsonParser();
+        JsonElement jsonTree = parser.parse(json);
+
+        if (jsonTree.isJsonObject()) {
+            JsonObject jsonObject = jsonTree.getAsJsonObject();
+
+            employee = new Employee();
+            employee.setName(jsonObject.getAsJsonPrimitive("name").toString());
+            employee.setAddress(jsonObject.getAsJsonPrimitive("address").toString());
+            employee.setPhone(jsonObject.getAsJsonPrimitive("phone").toString());
+            employee.setEmail(jsonObject.getAsJsonPrimitive("email").toString());
+        }
+
+        int result = employeeDao.insertEmployee(employee.getName(), employee.getAddress(), employee.getPhone(), employee.getEmail());
+
+        return result;
+    }
+
+    public void editPerson(int id, String json) {
+
+        PersonDao personnDao = new PersonDao();
+        JsonParser parser = new JsonParser();
+        JsonElement jsonTree = parser.parse(json);
+        try {
+            if (jsonTree.isJsonObject()) {
+                JsonObject jsonObject = jsonTree.getAsJsonObject();
+                String name = jsonObject.getAsJsonPrimitive("name").toString();
+                String address = jsonObject.getAsJsonPrimitive("address").toString();
+                String phone = jsonObject.getAsJsonPrimitive("phone").toString();
+                String email = jsonObject.getAsJsonPrimitive("email").toString();
+                personnDao.personEdit(id, name,address,phone,email);
+            }
+        } catch (Exception e) {
+            throw e;
+        }
+
+    }
+
+
+    public String findById(int id) {
         PersonDao personDao = new PersonDao();
         Person person = personDao.findById(id);
         Gson gson = new Gson();
@@ -95,8 +138,8 @@ public class ProcessResponse {
     }
 
     public void deltePerson(int id) {
-        StudentDao studetnDao = new StudentDao();
-        studetnDao.deleteStudent(id);
+        PersonDao personDao = new PersonDao();
+        personDao.deletePerson(id);
     }
 
 }

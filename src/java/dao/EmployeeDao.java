@@ -10,6 +10,7 @@ import java.io.IOException;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import pojo.Employee;
+import pojo.Student;
 import util.HibernateUtil;
 
 /**
@@ -28,18 +29,19 @@ public class EmployeeDao implements Closeable {
         }
     }
 
-    public void insertEmployee(String name, String address, String phone, String email) {
+    public int insertEmployee(String name, String address, String phone, String email) {
         try {
             Transaction transacrtion = session.beginTransaction();
             try {
                 Employee employee = new Employee();
-                employee.setName(name);
-                employee.setAddress(address);
-                employee.setPhone(phone);
-                employee.setEmail(email);
+                employee.setName(name.substring(1,name.length()-1));
+                employee.setAddress(address.substring(1,address.length()-1));
+                employee.setPhone(phone.substring(1,phone.length()-1));
+                employee.setEmail(email.substring(1,email.length()-1));
                 session.save(employee);
 
                 transacrtion.commit();
+                return employee.getId();
             } catch (Exception e) {
                 transacrtion.rollback();
                 throw e;
@@ -66,22 +68,6 @@ public class EmployeeDao implements Closeable {
         }
     }
 
-    public void editEmployee(Integer id, String name) {
-        try {
-            Transaction transacrtion = session.beginTransaction();
-            try {
-                Employee employee = (Employee) session.load(Employee.class, id);
-                employee.setName(name);
-
-                transacrtion.commit();
-            } catch (Exception e) {
-                transacrtion.rollback();
-                throw e;
-            }
-        } finally {
-            HibernateUtil.closeSession();
-        }
-    }
 
     public Employee findById(Integer id) {
         try {

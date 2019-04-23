@@ -39,8 +39,7 @@ public class PersonWebService {
     public Response createStudent(String json) {
         ProcessResponse process = new ProcessResponse();
 
-        // int response = process.createPerson(json);
-        return Response.ok(process.createPerson(json)).build();
+        return Response.ok(process.createStudent(json)).build();
     }
 
     @Path("insert/Employee")
@@ -50,8 +49,18 @@ public class PersonWebService {
     public Response createEmployee(String json) {
         ProcessResponse process = new ProcessResponse();
 
-        // int response = process.createPerson(json);
-        return Response.ok(process.createPerson(json)).build();
+        return Response.ok(process.createEmployee(json)).build();
+    }
+
+    @Path("edit/{id}")
+    @POST
+    @Consumes({MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_JSON})
+    public void editPerson(@PathParam("id") int id, String jSon) {
+        ProcessResponse process = new ProcessResponse();
+        
+        process.editPerson(id, jSon);
+      
     }
 
     @Path("listAll")
@@ -60,7 +69,13 @@ public class PersonWebService {
     @Produces({MediaType.APPLICATION_JSON})
     public String listAll() {
         ProcessResponse process = new ProcessResponse();
-        String response = process.processResponse();
+        String response = "";
+        try {
+            response = process.processResponse();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return response;
     }
 
